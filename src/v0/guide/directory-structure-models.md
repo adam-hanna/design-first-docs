@@ -33,17 +33,18 @@ Models are allowed to be organized into submodules and subdirectories, but each 
 
 **./src/models/foos/index.ts**
 ```typescript
+import { RequestPayload, MalformedPayloadError } from 'design-first';
 import { IsInt, Min } from 'class-validator';
 
 export class Foo { ... }
 
-type showFooPayloadProps = {
-  fooID: string;
-}
-
 export class ShowFooPayload {
-  constructor({ fooID }: showFooPayloadProps) {
-    this.fooID = parseInt(fooID);
+  constructor(props: RequestPayload) {
+    try {
+      this.fooID = parseInt(props.params.fooID);
+    } catch (e) {
+      throw new MalformedPayloadError("fooID must be an integer");
+    }
   }
 
   @IsInt()

@@ -2,6 +2,7 @@
 title: Introduction
 type: guide
 order: 2
+vue_version: 0.0.1
 ---
 
 ## What is design-first?

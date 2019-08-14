@@ -1,7 +1,7 @@
 ---
 title: Meet the Team
 type: guide
-order: 700
+order: 800
 vue_version: 0.0.1
 ---
 
