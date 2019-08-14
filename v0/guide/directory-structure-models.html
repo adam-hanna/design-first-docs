@@ -509,17 +509,18 @@
     │
     └...</code></pre>
 <p>Models are allowed to be organized into submodules and subdirectories, but each defined model must be exported directly from <code>./src/models/index.ts</code>. Only named exports and not default exports are allowed.</p>
-<p><strong>./src/models/foos/index.ts</strong><br><pre><code class="hljs typescript"><span class="hljs-keyword">import</span> &#123; IsInt, Min &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">'class-validator'</span>;
+<p><strong>./src/models/foos/index.ts</strong><br><pre><code class="hljs typescript"><span class="hljs-keyword">import</span> &#123; RequestPayload, MalformedPayloadError &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">'design-first'</span>;
+<span class="hljs-keyword">import</span> &#123; IsInt, Min &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">'class-validator'</span>;
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> Foo &#123; ... &#125;
 
-<span class="hljs-keyword">type</span> showFooPayloadProps = &#123;
-  fooID: <span class="hljs-built_in">string</span>;
-&#125;
-
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> ShowFooPayload &#123;
-  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">&#123; fooID &#125;: showFooPayloadProps</span>) &#123;
-    <span class="hljs-keyword">this</span>.fooID = <span class="hljs-built_in">parseInt</span>(fooID);
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">props: RequestPayload</span>) &#123;
+    <span class="hljs-keyword">try</span> &#123;
+      <span class="hljs-keyword">this</span>.fooID = <span class="hljs-built_in">parseInt</span>(props.params.fooID);
+    &#125; <span class="hljs-keyword">catch</span> (e) &#123;
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> MalformedPayloadError(<span class="hljs-string">"fooID must be an integer"</span>);
+    &#125;
   &#125;
 
   <span class="hljs-meta">@IsInt</span>()

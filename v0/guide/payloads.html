@@ -528,17 +528,18 @@
         │
         └foos
             │   index.ts</code></pre>
-<p><strong>./src/models/foos/index.ts</strong><br><pre><code class="hljs typescript"><span class="hljs-keyword">import</span> &#123; IsInt, Min &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">'class-validator'</span>;
+<p><strong>./src/models/foos/index.ts</strong><br><pre><code class="hljs typescript"><span class="hljs-keyword">import</span> &#123; RequestPayload, MalformedPayloadError &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">'design-first'</span>;
+<span class="hljs-keyword">import</span> &#123; IsInt, Min &#125; <span class="hljs-keyword">from</span> <span class="hljs-string">'class-validator'</span>;
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> Foo &#123; ... &#125;
 
-<span class="hljs-keyword">type</span> showFooPayloadProps = &#123;
-  fooID: <span class="hljs-built_in">string</span>;
-&#125;
-
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">class</span> ShowFooPayload &#123;
-  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">&#123; fooID &#125;: showFooPayloadProps</span>) &#123;
-    <span class="hljs-keyword">this</span>.fooID = <span class="hljs-built_in">parseInt</span>(fooID);
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">props: RequestPayload</span>) &#123;
+    <span class="hljs-keyword">try</span> &#123;
+      <span class="hljs-keyword">this</span>.fooID = <span class="hljs-built_in">parseInt</span>(props.params.fooID);
+    &#125; <span class="hljs-keyword">catch</span> (e) &#123;
+      <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> MalformedPayloadError(<span class="hljs-string">"fooID must be an integer"</span>);
+    &#125;
   &#125;
 
   <span class="hljs-meta">@IsInt</span>()
@@ -549,8 +550,14 @@
 
 <span class="hljs-keyword">export</span> * <span class="hljs-keyword">from</span> <span class="hljs-string">'./foos'</span>;</code></pre></p>
 <p>design-first uses <a href="https://github.com/typestack/class-validator" target="_blank" rel="noopener">class-validator</a> for payload validation. class-validator has many validation options, including custom-defined functions. Any <a href="https://github.com/typestack/class-validator#validation-errors" target="_blank" rel="noopener">validation errors</a> will be returned back to the user with a <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400" target="_blank" rel="noopener">400 http status code</a>.</p>
-<p>design-first requires that all payload classes have a constructor function that has one object as a parameter.</p>
-<p>Further note that payload variables passed to the server in the url path or in the query parameters can only be passed as <code>string</code>‘s. Any necessary type conversions will need to performed in the <code>constructor</code> function.</p>
+<p>design-first requires that all payload classes have a constructor function that has one object as a parameter that is a <code>RequestPayload</code> type. The request payload is a class with three keys: body, query and params. They correspond to the three ways that an end-user can pass data from the client to the server. The class is defined as:</p>
+<pre><code class="hljs go">export declare class RequestPayload &#123;
+    body: any;
+    query: any;
+    params: any;
+    constructor(body: any, query: any, params: any);
+&#125;</code></pre>
+<p>Further note that payload variables passed to the server in the url path or in the query parameters can only be passed as <code>string</code>‘s. Any necessary type conversions will need to performed in the <code>constructor</code> function. Any errors should throw a new <code>MalformedPayloadError</code> class.</p>
 <p>Payload validation is second in the request chain, after middleware, and before authentication.</p>
 
   
